@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:9.6.1
+    expose:
+      - "5433:5432"
+    volumes:
+      - ~/.docker-volumes/docker-login/postgresql/data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:3.0
+    expose:
+      - "6379"
+    volumes:
+      - ~/.docker-volumes/docker-login/redis/data:/var/lib/redis/data
+
+  mongo:
+    image: mongo:3.0
+    expose:
+      - "27017"
+    volumes:
+      - ~/.docker-volumes/docker-login/mongodb/data:/var/lib/mongo/data
+
+  api:
+    restart: always
+    build: .
+    expose:
+        - "5000"
+    environment:
+        DEBUG: 'false'
+    depends_on:
+      - mongo
+      - redis
+      - postgres
+    tty: true
+    command: /usr/local/bin/python
+
+  nginx:
+    depends_on:
+        - mongo
+        - redis
+        - postgres
+        - web
+    restart: always
+    build: ./nginx/
+    ports:
+      - "80:80"
+    volumes:
+      - /www/static
+      - static-volume:/home/django/app/web/epic_broker/static
+
+volumes:
+    static-volume:
+
+      
+      
+
